@@ -72,11 +72,36 @@
             overflow: hidden;
             transition: all 0.3s ease;
             border: 1px solid rgba(99, 102, 241, 0.1);
+            cursor: pointer;
+            position: relative;
         }
 
         .resource-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: #6366f1;
+        }
+
+        .resource-card::after {
+            content: '👆 Click to explore this topic';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .resource-card:hover::after {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .resource-header {
@@ -615,6 +640,153 @@
                     this.reset();
                     selectedFiles = [];
                     displayFilePreview();
+                });
+            </script>
+
+            <script>
+                // Wait for DOM to be fully loaded first
+                document.addEventListener('DOMContentLoaded', function() {
+                    console.log('DOM loaded, setting up all functionality...');
+                    
+                    // File upload functionality
+                    const fileInput = document.getElementById('fileInput');
+                    const filePreview = document.getElementById('filePreview');
+                    const uploadArea = document.querySelector('.file-upload-area');
+                    let selectedFiles = [];
+
+                    // Only set up file upload if elements exist
+                    if (fileInput && filePreview && uploadArea) {
+                        // Drag and drop functionality
+                        uploadArea.addEventListener('dragover', (e) => {
+                            e.preventDefault();
+                            uploadArea.classList.add('dragover');
+                        });
+
+                        uploadArea.addEventListener('dragleave', () => {
+                            uploadArea.classList.remove('dragover');
+                        });
+
+                        uploadArea.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            uploadArea.classList.remove('dragover');
+                            const files = Array.from(e.dataTransfer.files);
+                            handleFiles(files);
+                        });
+
+                        fileInput.addEventListener('change', (e) => {
+                            const files = Array.from(e.target.files);
+                            handleFiles(files);
+                        });
+
+                        function handleFiles(files) {
+                            selectedFiles = [...selectedFiles, ...files];
+                            displayFilePreview();
+                        }
+
+                        function displayFilePreview() {
+                            if (selectedFiles.length === 0) {
+                                filePreview.style.display = 'none';
+                                return;
+                            }
+
+                            filePreview.style.display = 'block';
+                            filePreview.innerHTML = selectedFiles.map((file, index) => `
+                                <div class="file-preview-item">
+                                    <div class="file-info">
+                                        <span class="file-icon">${getFileIcon(file.name)}</span>
+                                        <span>${file.name} (${formatFileSize(file.size)})</span>
+                                    </div>
+                                    <button type="button" class="remove-file" onclick="removeFile(${index})">Remove</button>
+                                </div>
+                            `).join('');
+                        }
+
+                        window.removeFile = function(index) {
+                            selectedFiles.splice(index, 1);
+                            displayFilePreview();
+                        }
+
+                        function getFileIcon(filename) {
+                            const ext = filename.split('.').pop().toLowerCase();
+                            const icons = {
+                                'png': '🖼️', 'jpg': '🖼️', 'jpeg': '🖼️', 'gif': '🖼️',
+                                'stl': '🗿', 'obj': '🗿', 'ply': '🗿',
+                                'pdf': '📄', 'mp4': '🎥', 'webm': '🎥'
+                            };
+                            return icons[ext] || '📎';
+                        }
+
+                        function formatFileSize(bytes) {
+                            if (bytes === 0) return '0 Bytes';
+                            const k = 1024;
+                            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                            const i = Math.floor(Math.log(bytes) / Math.log(k));
+                            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                        }
+
+                        // Form submission
+                        const contributionForm = document.getElementById('contributionForm');
+                        if (contributionForm) {
+                            contributionForm.addEventListener('submit', function(e) {
+                                e.preventDefault();
+                                
+                                // Collect form data
+                                const formData = new FormData(this);
+                                
+                                // Add files to form data
+                                selectedFiles.forEach(file => {
+                                    formData.append('files[]', file);
+                                });
+
+                                // Show success message (in real implementation, this would submit to server)
+                                alert('Thank you for your submission! Your contribution will be reviewed and added to the collection soon. You will receive an email confirmation at the address provided.');
+                                
+                                // Reset form
+                                this.reset();
+                                selectedFiles = [];
+                                displayFilePreview();
+                            });
+                        }
+                    }
+                    
+                    // Make resource cards clickable - more robust approach
+                    const resourceCards = document.querySelectorAll('.resource-card');
+                    console.log('Found', resourceCards.length, 'resource cards');
+                    
+                    resourceCards.forEach((card, index) => {
+                        console.log('Setting up card', index);
+                        
+                        card.addEventListener('click', function(e) {
+                            console.log('Card clicked!', e.target);
+                            
+                            // Don't trigger if clicking on links inside the card
+                            if (e.target.tagName === 'A' || e.target.closest('a')) {
+                                console.log('Clicked on a link, ignoring...');
+                                return;
+                            }
+                            
+                            const titleElement = this.querySelector('.resource-title');
+                            if (!titleElement) {
+                                console.log('No title element found');
+                                return;
+                            }
+                            
+                            const title = titleElement.textContent;
+                            const topicId = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                            
+                            console.log('Navigating to:', title);
+                            
+                            // Try to navigate to topic page
+                            const targetUrl = `topic.html?id=${topicId}&title=${encodeURIComponent(title)}`;
+                            console.log('Target URL:', targetUrl);
+                            
+                            // Navigate to topic page
+                            window.location.href = targetUrl;
+                        });
+                        
+                        // Also add a visual indicator that it's clickable
+                        card.style.cursor = 'pointer';
+                    });
                 });
             </script>
             <div class="resource-card">
