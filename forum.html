@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Forum - UW Student Community</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -64,9 +71,26 @@
             margin-top: 5px;
         }
 
-        .nav-buttons {
+        .auth-section {
             display: flex;
+            align-items: center;
             gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 25px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .nav-btn {
@@ -78,10 +102,35 @@
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
 
         .nav-btn:hover {
             background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: 60px 40px;
+            color: #6b7280;
+        }
+
+        .login-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .login-btn:hover {
+            background: #3367d6;
             transform: translateY(-2px);
         }
 
@@ -148,6 +197,11 @@
         .ask-question-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .ask-question-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .question-form {
@@ -379,144 +433,24 @@
             gap: 15px;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 20px 20px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s ease;
-        }
-
-        .close-modal:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .full-question {
-            margin-bottom: 30px;
-        }
-
-        .answers-section {
-            border-top: 2px solid #e2e8f0;
-            padding-top: 30px;
-        }
-
-        .answer-form {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-        }
-
-        .answers-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .answer-card {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 20px;
-            border-left: 4px solid #10b981;
-        }
-
-        .answer-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .answer-content {
-            color: #374151;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .answer-actions {
-            display: flex;
-            gap: 15px;
-            font-size: 0.9rem;
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
+        .loading {
+            text-align: center;
+            padding: 40px;
             color: #6b7280;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 15px;
-            transition: all 0.3s ease;
         }
 
-        .action-btn:hover {
-            background: #e2e8f0;
-            color: #374151;
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-radius: 50%;
+            border-top-color: #6366f1;
+            animation: spin 1s ease-in-out infinite;
         }
 
-        .best-answer {
-            border-left-color: #f59e0b;
-            background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 10%, #fef3c7 100%);
-        }
-
-        .best-answer-badge {
-            background: #f59e0b;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @keyframes slideDown {
@@ -530,37 +464,6 @@
             }
         }
 
-        @media (max-width: 768px) {
-            .forum-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-section {
-                min-width: auto;
-                flex-direction: column;
-            }
-
-            .question-header {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .question-meta {
-                align-items: flex-start;
-                text-align: left;
-            }
-
-            .question-body {
-                flex-direction: column;
-            }
-
-            .votes {
-                flex-direction: row;
-                margin-bottom: 15px;
-            }
-        }
-
         .status-indicator {
             width: 12px;
             height: 12px;
@@ -571,6 +474,379 @@
         .status-answered { background: #10b981; }
         .status-unanswered { background: #ef4444; }
         .status-discussing { background: #f59e0b; }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ef4444;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #10b981;
+        }
+
+        /* Question Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .question-modal {
+            background: white;
+            border-radius: 15px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 1001;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .modal-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0.9;
+        }
+
+        .modal-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-author img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .question-content {
+            margin-bottom: 30px;
+        }
+
+        .question-body {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #374151;
+            margin-bottom: 20px;
+        }
+
+        .question-tags-modal {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 30px;
+        }
+
+        .vote-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vote-btn-large {
+            background: none;
+            border: 2px solid #e2e8f0;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .vote-btn-large:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .vote-btn-large.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .vote-count-large {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #374151;
+        }
+
+        .answers-section {
+            margin-top: 30px;
+        }
+
+        .answers-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .answers-count {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .sort-answers {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            background: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .answer-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .answer-item.best-answer {
+            border-left-color: #10b981;
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+        }
+
+        .answer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .answer-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .answer-author img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+
+        .answer-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .best-answer-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .answer-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+
+        .answer-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .answer-vote {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mark-best-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mark-best-btn:hover {
+            background: #059669;
+        }
+
+        .reply-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .reply-header {
+            margin-bottom: 20px;
+        }
+
+        .reply-header h4 {
+            color: #1e293b;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .reply-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .reply-textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .reply-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .reply-tips {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .reply-submit {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reply-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .reply-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .question-modal {
+                margin: 10px;
+                max-height: 95vh;
+            }
+            
+            .modal-header {
+                padding: 20px;
+            }
+            
+            .modal-body {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -581,14 +857,29 @@
                     <h1 class="header-title">🎓 Math Forum</h1>
                     <p class="header-subtitle">UW Student Community for Math 125 & 126</p>
                 </div>
-                <div class="nav-buttons">
-                    <a href="index.html" class="nav-btn">← Back to Topics</a>
-                    <a href="#" class="nav-btn" onclick="showProfile()">Profile</a>
+                <div class="auth-section">
+                    <div id="userInfo" class="user-info" style="display: none;">
+                        <img id="userAvatar" class="user-avatar" src="" alt="User">
+                        <span id="userName"></span>
+                        <button class="nav-btn" onclick="signOut()">Sign Out</button>
+                    </div>
+                    <div id="authButtons" style="display: none;">
+                        <a href="index.html" class="nav-btn">← Back to Topics</a>
+                        <button class="nav-btn" onclick="signInWithGoogle()">Sign in with Google</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="forum-content">
+        <div id="loginPrompt" class="login-prompt">
+            <h2>Welcome to the UW Math Forum!</h2>
+            <p>Sign in with your UW Google account to ask questions, share knowledge, and connect with fellow students.</p>
+            <button class="login-btn" onclick="signInWithGoogle()">
+                🔗 Sign in with UW Google Account
+            </button>
+        </div>
+
+        <div id="forumContent" class="forum-content" style="display: none;">
             <div class="forum-controls">
                 <div class="search-section">
                     <input type="text" class="search-input" placeholder="Search questions, topics, or users..." id="searchInput">
@@ -607,8 +898,10 @@
                         <option value="answered">Answered</option>
                     </select>
                 </div>
-                <button class="ask-question-btn" onclick="showQuestionForm()">Ask Question</button>
+                <button class="ask-question-btn" onclick="showQuestionForm()" id="askBtn">Ask Question</button>
             </div>
+
+            <div id="messages"></div>
 
             <div class="question-form" id="questionForm">
                 <h3 style="margin-bottom: 20px; color: #1e293b;">Ask a New Question</h3>
@@ -648,187 +941,334 @@
                 </form>
             </div>
 
-            <div class="questions-list" id="questionsList">
-                <!-- Questions will be dynamically loaded here -->
+            <div id="questionsContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading questions...</p>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Question Detail Modal -->
-    <div class="modal" id="questionModal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="questionModal">
+        <div class="question-modal">
             <div class="modal-header">
-                <h2 id="modalQuestionTitle">Question Details</h2>
-                <button class="close-modal" onclick="closeModal()">&times;</button>
+                <button class="close-modal" onclick="closeQuestionModal()">&times;</button>
+                <h2 class="modal-title" id="modalQuestionTitle">Loading...</h2>
+                <div class="modal-meta">
+                    <div class="modal-author" id="modalQuestionAuthor">
+                        <img src="" alt="Author" id="modalAuthorImage">
+                        <div>
+                            <div id="modalAuthorName">Loading...</div>
+                            <div id="modalQuestionDate" style="font-size: 0.9rem; opacity: 0.8;">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="modal-stats" id="modalQuestionStats">
+                        <span>👀 0 views</span>
+                        <span>💬 0 answers</span>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Question details and answers will be loaded here -->
+            
+            <div class="modal-body">
+                <div class="question-content">
+                    <div class="question-body" id="modalQuestionBody">Loading question content...</div>
+                    <div class="question-tags-modal" id="modalQuestionTags"></div>
+                </div>
+                
+                <div class="question-actions">
+                    <div class="vote-section">
+                        <button class="vote-btn-large" id="modalUpvoteBtn" onclick="voteQuestionModal(1)">▲</button>
+                        <span class="vote-count-large" id="modalVoteCount">0</span>
+                        <button class="vote-btn-large" id="modalDownvoteBtn" onclick="voteQuestionModal(-1)">▼</button>
+                    </div>
+                    <div>
+                        <span id="modalQuestionCategory" class="tag"></span>
+                    </div>
+                </div>
+                
+                <div class="answers-section">
+                    <div class="answers-header">
+                        <h3 class="answers-count" id="answersCount">0 Answers</h3>
+                        <select class="sort-answers" id="sortAnswers" onchange="loadAnswers()">
+                            <option value="votes">Most Voted</option>
+                            <option value="recent">Most Recent</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                    
+                    <div id="answersList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading answers...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="reply-section" id="replySection" style="display: none;">
+                    <div class="reply-header">
+                        <h4>💬 Your Answer</h4>
+                        <p style="color: #6b7280; font-size: 0.9rem;">Help your fellow students by sharing your knowledge!</p>
+                    </div>
+                    
+                    <form id="answerForm">
+                        <textarea 
+                            class="reply-textarea" 
+                            id="answerText" 
+                            placeholder="Write your answer here... Explain the concept, show your work, or provide helpful insights."
+                            required>
+                        </textarea>
+                        
+                        <div class="reply-actions">
+                            <div class="reply-tips">
+                                💡 <strong>Tips:</strong> Include step-by-step explanations, cite sources, be respectful
+                            </div>
+                            <button type="submit" class="reply-submit" id="submitAnswer">Post Answer</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Sample forum data (in real implementation, this would come from a database)
-        let forumData = [
-            {
-                id: 1,
-                title: "How do I set up a triple integral for volume between surfaces?",
-                body: "I'm working on finding the volume between a paraboloid z = x² + y² and a plane z = 4. I understand the concept but I'm struggling with setting up the bounds for the triple integral. Can someone walk me through the process step by step?",
-                author: "Sarah Chen",
-                timestamp: "2 hours ago",
-                category: "math126",
-                tags: ["integration", "volume", "paraboloid"],
-                votes: 15,
-                answers: 3,
-                status: "answered",
-                answered: true,
-                answers_data: [
-                    {
-                        id: 1,
-                        author: "Mike Rodriguez",
-                        content: "Great question! For volume between z = x² + y² and z = 4, you need to find where they intersect first. Set x² + y² = 4, which gives you a circle of radius 2 in the xy-plane. Then set up: V = ∫∫∫ 1 dV = ∫₀²π ∫₀² ∫(r²)⁴ r dz dr dθ",
-                        timestamp: "1 hour ago",
-                        votes: 8,
-                        best: true
-                    },
-                    {
-                        id: 2,
-                        author: "Prof. Johnson",
-                        content: "Mike's approach is correct! I'd add that visualizing the region first is crucial. The paraboloid opens upward and the plane is horizontal at z=4. Their intersection creates a circular boundary at z=4, x²+y²=4.",
-                        timestamp: "45 minutes ago",
-                        votes: 12,
-                        best: false
-                    }
-                ]
-            },
-            {
-                id: 2,
-                title: "Surface area formula confusion - when to use which method?",
-                body: "I'm getting confused about when to use the surface area formula A = ∫∫√(1 + (∂z/∂x)² + (∂z/∂y)²) dA versus parametric surface methods. Can someone explain the difference?",
-                author: "Alex Kim",
-                timestamp: "5 hours ago",
-                category: "math126",
-                tags: ["surface-area", "parametric", "calculus"],
-                votes: 8,
-                answers: 1,
-                status: "discussing",
-                answered: false,
-                answers_data: [
-                    {
-                        id: 3,
-                        author: "Emma Wilson",
-                        content: "The first formula works when you have z as a function of x and y (like z = f(x,y)). Use parametric methods when the surface is better described with parameters, like spheres or more complex surfaces.",
-                        timestamp: "3 hours ago",
-                        votes: 5,
-                        best: false
-                    }
-                ]
-            },
-            {
-                id: 3,
-                title: "Best way to memorize integration techniques?",
-                body: "I keep forgetting when to use substitution vs integration by parts vs partial fractions. Does anyone have good mnemonics or study strategies that helped them?",
-                author: "Jordan Martinez",
-                timestamp: "1 day ago",
-                category: "study-tips",
-                tags: ["integration", "study-methods", "memory"],
-                votes: 23,
-                answers: 7,
-                status: "answered",
-                answered: true,
-                answers_data: []
-            },
-            {
-                id: 4,
-                title: "Why does the disk method work for volumes of revolution?",
-                body: "I can apply the disk method formula, but I don't really understand WHY it works. Can someone explain the intuition behind ∫π[f(x)]² dx?",
-                author: "Taylor Brown",
-                timestamp: "3 days ago",
-                category: "math125",
-                tags: ["volume", "revolution", "intuition"],
-                votes: 12,
-                answers: 0,
-                status: "unanswered",
-                answered: false,
-                answers_data: []
-            },
-            {
-                id: 5,
-                title: "Polar coordinates in double integrals - common mistakes?",
-                body: "I keep making errors when converting to polar coordinates. What are the most common mistakes students make, and how can I avoid them?",
-                author: "Casey Wong",
-                timestamp: "1 week ago",
-                category: "math126",
-                tags: ["polar-coordinates", "integration", "common-errors"],
-                votes: 18,
-                answers: 4,
-                status: "answered",
-                answered: true,
-                answers_data: []
+        // 🔥 FIREBASE CONFIGURATION
+        const firebaseConfig = {
+        apiKey: "AIzaSyAEXNhi84tJqxOK5Wh0aRqQqEgIi_8CllA",
+        authDomain: "visual-joy.firebaseapp.com",
+        projectId: "visual-joy",
+        storageBucket: "visual-joy.firebasestorage.app",
+        messagingSenderId: "497956678779",
+        appId: "1:497956678779:web:259ddf03c5c416bdf186de",
+        measurementId: "G-8DY883EF30"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const storage = firebase.storage();
+
+        // Global variables
+        let currentUser = null;
+        let unsubscribeQuestions = null;
+
+        // 🔐 AUTHENTICATION
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            if (user) {
+                showForumContent();
+                loadQuestions();
+                updateUserProfile(user);
+            } else {
+                showLoginPrompt();
             }
-        ];
+        });
 
-        let currentUser = "CurrentStudent"; // In real app, this would be from authentication
-
-        // Display functions
-        function displayQuestions(questions = forumData) {
-            const questionsList = document.getElementById('questionsList');
-            questionsList.innerHTML = '';
-
-            if (questions.length === 0) {
-                questionsList.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 40px;">No questions found. Be the first to ask!</p>';
-                return;
-            }
-
-            questions.forEach(question => {
-                const questionCard = createQuestionCard(question);
-                questionsList.appendChild(questionCard);
+        function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({
+                hd: 'uw.edu' // Restrict to UW domain
+            });
+            
+            auth.signInWithPopup(provider).catch(error => {
+                console.error('Sign in error:', error);
+                showMessage('Sign in failed. Please try again.', 'error');
             });
         }
 
-        function createQuestionCard(question) {
-            const card = document.createElement('div');
-            card.className = 'question-card';
-            card.onclick = () => openQuestionModal(question.id);
+        function signOut() {
+            auth.signOut();
+        }
 
-            const statusClass = question.status === 'answered' ? 'status-answered' : 
-                               question.status === 'discussing' ? 'status-discussing' : 'status-unanswered';
+        function showLoginPrompt() {
+            document.getElementById('loginPrompt').style.display = 'block';
+            document.getElementById('forumContent').style.display = 'none';
+            document.getElementById('authButtons').style.display = 'flex';
+            document.getElementById('userInfo').style.display = 'none';
+        }
 
-            card.innerHTML = `
-                <div class="question-body">
-                    <div class="votes">
-                        <button class="vote-btn" onclick="event.stopPropagation(); vote(${question.id}, 'up')">▲</button>
-                        <span class="vote-count">${question.votes}</span>
-                        <button class="vote-btn" onclick="event.stopPropagation(); vote(${question.id}, 'down')">▼</button>
-                    </div>
-                    <div class="question-content">
-                        <div class="question-header">
-                            <div>
-                                <h3 class="question-title">
-                                    <span class="status-indicator ${statusClass}"></span>
-                                    ${question.title}
-                                </h3>
-                                <div class="question-tags">
-                                    <span class="tag ${question.category}">${getCategoryName(question.category)}</span>
-                                    ${question.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+        function showForumContent() {
+            document.getElementById('loginPrompt').style.display = 'none';
+            document.getElementById('forumContent').style.display = 'block';
+            document.getElementById('authButtons').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'flex';
+        }
+
+        function updateUserProfile(user) {
+            document.getElementById('userName').textContent = user.displayName || user.email;
+            document.getElementById('userAvatar').src = user.photoURL || 'https://via.placeholder.com/32';
+            
+            // Create/update user profile in Firestore
+            db.collection('users').doc(user.uid).set({
+                name: user.displayName || user.email,
+                email: user.email,
+                photoURL: user.photoURL,
+                lastActive: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        }
+
+        // 📝 QUESTION MANAGEMENT
+        function loadQuestions() {
+            const questionsContainer = document.getElementById('questionsContainer');
+            questionsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading questions...</p></div>';
+
+            // Real-time listener for questions
+            unsubscribeQuestions = db.collection('questions')
+                .orderBy('createdAt', 'desc')
+                .onSnapshot(snapshot => {
+                    const questions = [];
+                    snapshot.forEach(doc => {
+                        questions.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    displayQuestions(questions);
+                }, error => {
+                    console.error('Error loading questions:', error);
+                    showMessage('Error loading questions. Please refresh the page.', 'error');
+                });
+        }
+
+        function displayQuestions(questions) {
+            const questionsContainer = document.getElementById('questionsContainer');
+            
+            if (questions.length === 0) {
+                questionsContainer.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 40px;">No questions found. Be the first to ask!</p>';
+                return;
+            }
+
+            questionsContainer.innerHTML = questions.map(question => createQuestionHTML(question)).join('');
+        }
+
+        function createQuestionHTML(question) {
+            const createdAt = question.createdAt ? question.createdAt.toDate() : new Date();
+            const timeAgo = getTimeAgo(createdAt);
+            
+            return `
+                <div class="question-card" onclick="openQuestion('${question.id}')">
+                    <div class="question-body">
+                        <div class="votes">
+                            <button class="vote-btn" onclick="event.stopPropagation(); voteQuestion('${question.id}', 1)">▲</button>
+                            <span class="vote-count">${question.votes || 0}</span>
+                            <button class="vote-btn" onclick="event.stopPropagation(); voteQuestion('${question.id}', -1)">▼</button>
+                        </div>
+                        <div class="question-content">
+                            <div class="question-header">
+                                <div>
+                                    <h3 class="question-title">
+                                        <span class="status-indicator ${question.answers > 0 ? 'status-answered' : 'status-unanswered'}"></span>
+                                        ${question.title}
+                                    </h3>
+                                    <div class="question-tags">
+                                        <span class="tag ${question.category}">${getCategoryName(question.category)}</span>
+                                        ${(question.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="question-meta">
+                                    <div class="author-info">${question.authorName || 'Anonymous'}</div>
+                                    <div class="timestamp">${timeAgo}</div>
                                 </div>
                             </div>
-                            <div class="question-meta">
-                                <div class="author-info">${question.author}</div>
-                                <div class="timestamp">${question.timestamp}</div>
+                            <p class="question-preview">${question.body.substring(0, 200)}${question.body.length > 200 ? '...' : ''}</p>
+                            <div class="question-stats">
+                                <span class="stat-item">💬 ${question.answers || 0} answers</span>
+                                <span class="stat-item">👀 ${question.views || 0} views</span>
+                                <span class="stat-item">⭐ ${question.votes || 0} votes</span>
                             </div>
-                        </div>
-                        <p class="question-preview">${question.body.substring(0, 200)}${question.body.length > 200 ? '...' : ''}</p>
-                        <div class="question-stats">
-                            <span class="stat-item">💬 ${question.answers} answers</span>
-                            <span class="stat-item">👀 ${Math.floor(Math.random() * 100) + 20} views</span>
-                            <span class="stat-item">⭐ ${question.votes} votes</span>
                         </div>
                     </div>
                 </div>
             `;
+        }
 
-            return card;
+        async function submitQuestion(e) {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                showMessage('Please sign in to ask a question.', 'error');
+                return;
+            }
+
+            const title = document.getElementById('questionTitle').value;
+            const category = document.getElementById('questionCategory').value;
+            const body = document.getElementById('questionBody').value;
+            const tagText = document.getElementById('questionTags').value;
+            const tags = tagText ? tagText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
+            try {
+                await db.collection('questions').add({
+                    title,
+                    body,
+                    category,
+                    tags,
+                    authorId: currentUser.uid,
+                    authorName: currentUser.displayName || currentUser.email,
+                    authorPhoto: currentUser.photoURL,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    votes: 0,
+                    answers: 0,
+                    views: 0
+                });
+
+                hideQuestionForm();
+                showMessage('Question posted successfully!', 'success');
+                document.getElementById('newQuestionForm').reset();
+            } catch (error) {
+                console.error('Error posting question:', error);
+                showMessage('Error posting question. Please try again.', 'error');
+            }
+        }
+
+        async function voteQuestion(questionId, direction) {
+            if (!currentUser) {
+                showMessage('Please sign in to vote.', 'error');
+                return;
+            }
+
+            try {
+                const questionRef = db.collection('questions').doc(questionId);
+                await db.runTransaction(async (transaction) => {
+                    const questionDoc = await transaction.get(questionRef);
+                    if (!questionDoc.exists) {
+                        throw new Error('Question does not exist!');
+                    }
+
+                    const currentVotes = questionDoc.data().votes || 0;
+                    transaction.update(questionRef, {
+                        votes: currentVotes + direction
+                    });
+                });
+            } catch (error) {
+                console.error('Error voting:', error);
+                showMessage('Error voting. Please try again.', 'error');
+            }
+        }
+
+        function openQuestion(questionId) {
+            // Increment view count
+            db.collection('questions').doc(questionId).update({
+                views: firebase.firestore.FieldValue.increment(1)
+            });
+
+            // Load and show question details
+            showQuestionModal(questionId);
+        }
+
+        // 🛠️ UTILITY FUNCTIONS
+        function showQuestionForm() {
+            if (!currentUser) {
+                showMessage('Please sign in to ask a question.', 'error');
+                return;
+            }
+            document.getElementById('questionForm').classList.add('show');
+            document.getElementById('questionTitle').focus();
+        }
+
+        function hideQuestionForm() {
+            document.getElementById('questionForm').classList.remove('show');
         }
 
         function getCategoryName(category) {
@@ -843,207 +1283,368 @@
             return categories[category] || category;
         }
 
-        // Question form functions
-        function showQuestionForm() {
-            document.getElementById('questionForm').classList.add('show');
-            document.getElementById('questionTitle').focus();
-        }
-
-        function hideQuestionForm() {
-            document.getElementById('questionForm').classList.remove('show');
-            document.getElementById('newQuestionForm').reset();
-        }
-
-        // Modal functions
-        function openQuestionModal(questionId) {
-            const question = forumData.find(q => q.id === questionId);
-            if (!question) return;
-
-            document.getElementById('modalQuestionTitle').textContent = question.title;
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
             
-            const modalBody = document.getElementById('modalBody');
-            modalBody.innerHTML = `
-                <div class="full-question">
-                    <div class="question-header">
-                        <div class="question-meta">
-                            <div class="author-info">Asked by ${question.author}</div>
-                            <div class="timestamp">${question.timestamp}</div>
-                        </div>
-                    </div>
-                    <div class="question-tags" style="margin: 15px 0;">
-                        <span class="tag ${question.category}">${getCategoryName(question.category)}</span>
-                        ${question.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                    </div>
-                    <div style="color: #374151; line-height: 1.6; margin: 20px 0;">${question.body}</div>
-                    <div class="question-stats">
-                        <span class="stat-item">⭐ ${question.votes} votes</span>
-                        <span class="stat-item">👀 ${Math.floor(Math.random() * 100) + 20} views</span>
-                    </div>
-                </div>
-
-                <div class="answers-section">
-                    <h3 style="margin-bottom: 20px; color: #1e293b;">${question.answers} Answer${question.answers !== 1 ? 's' : ''}</h3>
-                    
-                    <div class="answer-form">
-                        <h4 style="margin-bottom: 15px; color: #374151;">Your Answer</h4>
-                        <textarea placeholder="Write your answer here..." style="width: 100%; min-height: 100px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; margin-bottom: 15px;"></textarea>
-                        <button class="submit-btn" onclick="submitAnswer(${questionId})">Post Answer</button>
-                    </div>
-
-                    <div class="answers-list">
-                        ${question.answers_data.map(answer => `
-                            <div class="answer-card ${answer.best ? 'best-answer' : ''}">
-                                <div class="answer-header">
-                                    <div class="author-info">${answer.author}</div>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        ${answer.best ? '<span class="best-answer-badge">Best Answer</span>' : ''}
-                                        <span class="timestamp">${answer.timestamp}</span>
-                                    </div>
-                                </div>
-                                <div class="answer-content">${answer.content}</div>
-                                <div class="answer-actions">
-                                    <button class="action-btn" onclick="voteAnswer(${answer.id}, 'up')">👍 ${answer.votes}</button>
-                                    <button class="action-btn" onclick="voteAnswer(${answer.id}, 'down')">👎</button>
-                                    <button class="action-btn" onclick="replyToAnswer(${answer.id})">Reply</button>
-                                    ${!answer.best && question.author === currentUser ? `<button class="action-btn" onclick="markBestAnswer(${answer.id})">Mark as Best</button>` : ''}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('questionModal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            document.getElementById('questionModal').classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Interaction functions
-        function vote(questionId, direction) {
-            const question = forumData.find(q => q.id === questionId);
-            if (question) {
-                question.votes += direction === 'up' ? 1 : -1;
-                displayQuestions(getFilteredQuestions());
+            const intervals = [
+                { label: 'year', seconds: 31536000 },
+                { label: 'month', seconds: 2592000 },
+                { label: 'week', seconds: 604800 },
+                { label: 'day', seconds: 86400 },
+                { label: 'hour', seconds: 3600 },
+                { label: 'minute', seconds: 60 }
+            ];
+            
+            for (const interval of intervals) {
+                const count = Math.floor(diffInSeconds / interval.seconds);
+                if (count >= 1) {
+                    return `${count} ${interval.label}${count > 1 ? 's' : ''} ago`;
+                }
             }
+            
+            return 'Just now';
         }
 
-        function submitAnswer(questionId) {
-            // In real implementation, this would submit to backend
-            alert('Answer submitted! (In real implementation, this would save to database)');
-            closeModal();
-        }
-
-        function voteAnswer(answerId, direction) {
-            // In real implementation, this would update answer votes
-            console.log(`Voting ${direction} on answer ${answerId}`);
-        }
-
-        function markBestAnswer(answerId) {
-            // In real implementation, this would mark answer as best
-            alert('Answer marked as best! (In real implementation, this would update the database)');
-        }
-
-        // Search and filter functions
-        function getFilteredQuestions() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const sortFilter = document.getElementById('sortFilter').value;
-
-            let filtered = forumData.filter(question => {
-                const matchesSearch = searchTerm === '' || 
-                    question.title.toLowerCase().includes(searchTerm) ||
-                    question.body.toLowerCase().includes(searchTerm) ||
-                    question.author.toLowerCase().includes(searchTerm) ||
-                    question.tags.some(tag => tag.toLowerCase().includes(searchTerm));
-
-                const matchesCategory = categoryFilter === 'all' || question.category === categoryFilter;
-
-                return matchesSearch && matchesCategory;
-            });
-
-            // Sort questions
-            switch (sortFilter) {
-                case 'popular':
-                    filtered.sort((a, b) => b.votes - a.votes);
-                    break;
-                case 'unanswered':
-                    filtered = filtered.filter(q => q.answers === 0);
-                    break;
-                case 'answered':
-                    filtered = filtered.filter(q => q.answers > 0);
-                    break;
-                case 'recent':
-                default:
-                    // Already in recent order
-                    break;
-            }
-
-            return filtered;
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `${type}-message`;
+            messageDiv.textContent = message;
+            messagesDiv.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
         }
 
         // Event listeners
-        document.getElementById('searchInput').addEventListener('input', () => {
-            displayQuestions(getFilteredQuestions());
-        });
+        document.getElementById('newQuestionForm').addEventListener('submit', submitQuestion);
 
-        document.getElementById('categoryFilter').addEventListener('change', () => {
-            displayQuestions(getFilteredQuestions());
-        });
-
-        document.getElementById('sortFilter').addEventListener('change', () => {
-            displayQuestions(getFilteredQuestions());
-        });
-
-        document.getElementById('newQuestionForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const title = document.getElementById('questionTitle').value;
-            const category = document.getElementById('questionCategory').value;
-            const body = document.getElementById('questionBody').value;
-            const tags = document.getElementById('questionTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
-
-            const newQuestion = {
-                id: forumData.length + 1,
-                title: title,
-                body: body,
-                author: currentUser,
-                timestamp: "Just now",
-                category: category,
-                tags: tags,
-                votes: 0,
-                answers: 0,
-                status: "unanswered",
-                answered: false,
-                answers_data: []
-            };
-
-            forumData.unshift(newQuestion);
-            hideQuestionForm();
-            displayQuestions(getFilteredQuestions());
-            
-            // Show success message
-            alert('Question posted successfully!');
-        });
-
-        // Close modal when clicking outside
-        document.getElementById('questionModal').addEventListener('click', (e) => {
-            if (e.target.id === 'questionModal') {
-                closeModal();
+        // Clean up listeners when page unloads
+        window.addEventListener('beforeunload', () => {
+            if (unsubscribeQuestions) {
+                unsubscribeQuestions();
             }
         });
 
-        // Initialize the forum
-        document.addEventListener('DOMContentLoaded', () => {
-            displayQuestions();
+        // 📋 QUESTION MODAL FUNCTIONALITY
+        let currentQuestionId = null;
+        let unsubscribeAnswers = null;
+
+        async function showQuestionModal(questionId) {
+            currentQuestionId = questionId;
+            const modal = document.getElementById('questionModal');
+            
+            try {
+                // Load question details
+                const questionDoc = await db.collection('questions').doc(questionId).get();
+                if (!questionDoc.exists) {
+                    showMessage('Question not found.', 'error');
+                    return;
+                }
+
+                const question = { id: questionDoc.id, ...questionDoc.data() };
+                populateQuestionModal(question);
+                
+                // Load answers
+                loadAnswers();
+                
+                // Show modal
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                
+                // Show reply section if user is logged in
+                const replySection = document.getElementById('replySection');
+                if (currentUser) {
+                    replySection.style.display = 'block';
+                } else {
+                    replySection.style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Error loading question:', error);
+                showMessage('Error loading question details.', 'error');
+            }
+        }
+
+        function populateQuestionModal(question) {
+            document.getElementById('modalQuestionTitle').textContent = question.title;
+            document.getElementById('modalQuestionBody').textContent = question.body;
+            document.getElementById('modalVoteCount').textContent = question.votes || 0;
+            
+            // Author info
+            document.getElementById('modalAuthorName').textContent = question.authorName || 'Anonymous';
+            document.getElementById('modalAuthorImage').src = question.authorPhoto || 'https://via.placeholder.com/32';
+            
+            // Date
+            const createdAt = question.createdAt ? question.createdAt.toDate() : new Date();
+            document.getElementById('modalQuestionDate').textContent = getTimeAgo(createdAt);
+            
+            // Stats
+            document.getElementById('modalQuestionStats').innerHTML = `
+                <span>👀 ${question.views || 0} views</span>
+                <span>💬 ${question.answers || 0} answers</span>
+                <span>⭐ ${question.votes || 0} votes</span>
+            `;
+            
+            // Category
+            document.getElementById('modalQuestionCategory').textContent = getCategoryName(question.category);
+            document.getElementById('modalQuestionCategory').className = `tag ${question.category}`;
+            
+            // Tags
+            const tagsContainer = document.getElementById('modalQuestionTags');
+            tagsContainer.innerHTML = (question.tags || []).map(tag => 
+                `<span class="tag">${tag}</span>`
+            ).join('');
+        }
+
+        function loadAnswers() {
+            const answersList = document.getElementById('answersList');
+            const sortBy = document.getElementById('sortAnswers').value;
+            
+            answersList.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading answers...</p></div>';
+            
+            // Clean up previous listener
+            if (unsubscribeAnswers) {
+                unsubscribeAnswers();
+            }
+            
+            // Set up real-time listener for answers - start with basic query
+            let query = db.collection('answers').where('questionId', '==', currentQuestionId);
+            
+            unsubscribeAnswers = query.onSnapshot(snapshot => {
+                const answers = [];
+                snapshot.forEach(doc => {
+                    answers.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Sort answers client-side to avoid index requirements
+                const sortedAnswers = sortAnswersClientSide(answers, sortBy);
+                
+                displayAnswers(sortedAnswers);
+                updateAnswersCount(sortedAnswers.length);
+            }, error => {
+                console.error('Error loading answers:', error);
+                answersList.innerHTML = '<p style="text-align: center; color: #ef4444;">Error loading answers. Please try refreshing.</p>';
+            });
+        }
+
+        function sortAnswersClientSide(answers, sortBy) {
+            switch (sortBy) {
+                case 'votes':
+                    return answers.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+                case 'recent':
+                    return answers.sort((a, b) => {
+                        const timeA = a.createdAt ? a.createdAt.toDate() : new Date(0);
+                        const timeB = b.createdAt ? b.createdAt.toDate() : new Date(0);
+                        return timeB - timeA;
+                    });
+                case 'oldest':
+                    return answers.sort((a, b) => {
+                        const timeA = a.createdAt ? a.createdAt.toDate() : new Date(0);
+                        const timeB = b.createdAt ? b.createdAt.toDate() : new Date(0);
+                        return timeA - timeB;
+                    });
+                default:
+                    return answers;
+            }
+        }
+
+        function displayAnswers(answers) {
+            const answersList = document.getElementById('answersList');
+            
+            if (answers.length === 0) {
+                answersList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #6b7280;">
+                        <h4>No answers yet</h4>
+                        <p>Be the first to help with this question!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            answersList.innerHTML = answers.map(answer => createAnswerHTML(answer)).join('');
+        }
+
+        function createAnswerHTML(answer) {
+            const createdAt = answer.createdAt ? answer.createdAt.toDate() : new Date();
+            const timeAgo = getTimeAgo(createdAt);
+            const isBestAnswer = answer.isBest || false;
+            
+            return `
+                <div class="answer-item ${isBestAnswer ? 'best-answer' : ''}">
+                    <div class="answer-header">
+                        <div class="answer-author">
+                            <img src="${answer.authorPhoto || 'https://via.placeholder.com/28'}" alt="Author">
+                            <div>
+                                <strong>${answer.authorName || 'Anonymous'}</strong>
+                                ${isBestAnswer ? '<span class="best-answer-badge">✅ Best Answer</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="answer-meta">
+                            <span>${timeAgo}</span>
+                            ${canMarkBestAnswer(answer) ? `<button class="mark-best-btn" onclick="markBestAnswer('${answer.id}')">Mark as Best</button>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="answer-content">${answer.content}</div>
+                    
+                    <div class="answer-actions">
+                        <div class="answer-vote">
+                            <button class="vote-btn" onclick="voteAnswer('${answer.id}', 1)">▲</button>
+                            <span class="vote-count">${answer.votes || 0}</span>
+                            <button class="vote-btn" onclick="voteAnswer('${answer.id}', -1)">▼</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function canMarkBestAnswer(answer) {
+            // Only question author can mark best answers, and only if it's not already marked
+            // You'd need to track question ownership for this
+            return false; // Simplified for now
+        }
+
+        function updateAnswersCount(count) {
+            document.getElementById('answersCount').textContent = `${count} Answer${count !== 1 ? 's' : ''}`;
+        }
+
+        async function voteQuestionModal(direction) {
+            if (!currentUser) {
+                showMessage('Please sign in to vote.', 'error');
+                return;
+            }
+            
+            try {
+                const questionRef = db.collection('questions').doc(currentQuestionId);
+                await db.runTransaction(async (transaction) => {
+                    const questionDoc = await transaction.get(questionRef);
+                    if (!questionDoc.exists) {
+                        throw new Error('Question does not exist!');
+                    }
+
+                    const currentVotes = questionDoc.data().votes || 0;
+                    transaction.update(questionRef, {
+                        votes: currentVotes + direction
+                    });
+                });
+                
+                // Update the display
+                const voteCountElement = document.getElementById('modalVoteCount');
+                const currentCount = parseInt(voteCountElement.textContent);
+                voteCountElement.textContent = currentCount + direction;
+                
+            } catch (error) {
+                console.error('Error voting:', error);
+                showMessage('Error voting. Please try again.', 'error');
+            }
+        }
+
+        async function voteAnswer(answerId, direction) {
+            if (!currentUser) {
+                showMessage('Please sign in to vote.', 'error');
+                return;
+            }
+
+            try {
+                const answerRef = db.collection('answers').doc(answerId);
+                await db.runTransaction(async (transaction) => {
+                    const answerDoc = await transaction.get(answerRef);
+                    if (!answerDoc.exists) {
+                        throw new Error('Answer does not exist!');
+                    }
+
+                    const currentVotes = answerDoc.data().votes || 0;
+                    transaction.update(answerRef, {
+                        votes: currentVotes + direction
+                    });
+                });
+            } catch (error) {
+                console.error('Error voting on answer:', error);
+                showMessage('Error voting. Please try again.', 'error');
+            }
+        }
+
+        async function submitAnswer(e) {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                showMessage('Please sign in to post an answer.', 'error');
+                return;
+            }
+
+            const answerText = document.getElementById('answerText').value.trim();
+            if (!answerText) {
+                showMessage('Please write an answer before submitting.', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitAnswer');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Posting...';
+
+            try {
+                // Add answer to database
+                await db.collection('answers').add({
+                    questionId: currentQuestionId,
+                    content: answerText,
+                    authorId: currentUser.uid,
+                    authorName: currentUser.displayName || currentUser.email,
+                    authorPhoto: currentUser.photoURL,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    votes: 0,
+                    isBest: false
+                });
+
+                // Update question answer count
+                await db.collection('questions').doc(currentQuestionId).update({
+                    answers: firebase.firestore.FieldValue.increment(1)
+                });
+
+                // Clear form and show success
+                document.getElementById('answerText').value = '';
+                showMessage('Answer posted successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error posting answer:', error);
+                showMessage('Error posting answer. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Post Answer';
+            }
+        }
+
+        function closeQuestionModal() {
+            const modal = document.getElementById('questionModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto'; // Restore scrolling
+            
+            // Clean up
+            if (unsubscribeAnswers) {
+                unsubscribeAnswers();
+                unsubscribeAnswers = null;
+            }
+            currentQuestionId = null;
+        }
+
+        // Event listeners for modal
+        document.getElementById('answerForm').addEventListener('submit', submitAnswer);
+
+        // Close modal when clicking outside
+        document.getElementById('questionModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeQuestionModal();
+            }
         });
 
-        function showProfile() {
-            alert('Profile feature coming soon! This would show user stats, reputation, and question history.');
-        }
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('questionModal').classList.contains('show')) {
+                closeQuestionModal();
+            }
+        });
     </script>
 </body>
 </html>
