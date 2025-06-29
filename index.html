@@ -439,6 +439,28 @@
                 padding: 20px;
             }
         }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-left: 82%;
+        }
+
+        .nav-btn {
+            background: rgb(0, 0, 0);
+            color: grey;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -446,6 +468,10 @@
         <div class="header">
             <h1>WXML 399: Visual Joy</h1>
             <p>Exploring 3D Prints and Animations for Calculus • Math 125 & 126 Resources</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="forum.html" class="nav-btn">💬 Student Forum</a>
         </div>
 
         <div class="resources-grid">
